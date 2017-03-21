@@ -4,7 +4,11 @@ import java.util.List;
 
 public class Controller {
 
-    private Dao dao = new Dao();
+    private Dao dao;
+
+    public Controller(String url, String username, String password) {
+        dao = new Dao(url, username, password);
+    }
 
     public void addFields(int could){
         for (int i = 1; i <= could; i++) {
@@ -27,5 +31,11 @@ public class Controller {
 
     public int sum(){
         return 0;
+    }
+
+    public void closeDao(){
+        if(dao != null){
+            dao.close();
+        }
     }
 }
