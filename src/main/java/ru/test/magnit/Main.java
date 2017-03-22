@@ -13,9 +13,11 @@ public class Main {
 
         controller.addFields(n);
         controller.entityToXml();
-        controller.xmlToXslt();
-        int sum = controller.sum();
+        controller.transformXml();
+        int summary = controller.summary();
 
-        System.out.println(sum);
+        controller.closeDao();
+
+        System.out.println(summary);
     }
 }
