@@ -35,9 +35,10 @@ public class Controller {
     public void entityToXml(){
         List<Test> list = dao.getAll();
         if(list != null && list.size() > 0){
-            File file = new File("1.xml");
-            file.delete();
             try {
+                File file = new File("1.xml");
+                file.delete();
+
                 Document doc = DocumentBuilderFactory.newInstance()
                         .newDocumentBuilder()
                         .newDocument();

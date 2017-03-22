@@ -25,6 +25,8 @@ public class Dao {
             Class.forName("org.postgresql.Driver");
             connection = DriverManager.getConnection(url, username, password);
             statement = connection.createStatement();
+            statement.executeUpdate("DELETE FROM test");
+            System.out.println("Connect to DB.");
         }catch (ClassNotFoundException | SQLException e){
             System.err.println(e.getMessage());
         }
@@ -72,6 +74,7 @@ public class Dao {
         try {
             if (connection != null) {
                 connection.close();
+                System.out.println("Close connect to DB.");
             }
         }catch (SQLException e){
             System.err.println(e.getMessage());
