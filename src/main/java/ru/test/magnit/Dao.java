@@ -3,6 +3,7 @@ package ru.test.magnit;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * Класс данных для связи с базой данных и получения запросов
@@ -20,14 +21,30 @@ public class Dao {
      */
     private Statement statement;
 
-    public Dao(String url, String username, String password){
+    public Dao(Properties property){
         try {
-            Class.forName("org.postgresql.Driver");
-            connection = DriverManager.getConnection(url, username, password);
+            Class.forName(property.getProperty("db.driver"));
+            connection = DriverManager.getConnection(
+                    property.getProperty("db.url"),
+                    property.getProperty("db.user"),
+                    property.getProperty("db.password"));
+
             statement = connection.createStatement();
             statement.executeUpdate("DELETE FROM test");
-            System.out.println("Connect to DB.");
+            connection.setAutoCommit(false);
+            System.out.println("Success connected to DB.");
         }catch (ClassNotFoundException | SQLException e){
+            System.err.println(e.getMessage());
+        }
+    }
+
+    /**
+     * Метод коммитит в базу данных
+     */
+    public void commit(){
+        try {
+            connection.commit();
+        } catch (SQLException e) {
             System.err.println(e.getMessage());
         }
     }
@@ -35,8 +52,6 @@ public class Dao {
     /**
      * Метод save() сохраняет объект в таблице Test базы данных
      * @param test сохраняемый объект
-     * @return результатом является возвращаемый объект
-     * @exception SQLException если запись прошла безуспешно, то возвращается пустое значение
      */
     public Test save(Test test) {
         try {
@@ -44,18 +59,22 @@ public class Dao {
             return test;
         } catch (SQLException e) {
             System.err.println(e.getMessage());
+            try {
+                connection.rollback();
+            } catch (SQLException e1) {
+                System.err.println(e1.getMessage());
+            }
             return null;
         }
     }
 
     /**
      * Метод getAll() возвращает список объектов, содержащихся в таблице Test базы данных
-     * @return возвращает список объектов
      */
     public List<Test> getAll() {
         List<Test> resultList = new ArrayList<>();
         try {
-            ResultSet result = statement.executeQuery("SELECT * FROM test");
+            ResultSet result = statement.executeQuery("SELECT field FROM test");
             while (result.next()) {
                 Test test = new Test();
                 test.setField(result.getInt("field"));
@@ -74,7 +93,7 @@ public class Dao {
         try {
             if (connection != null) {
                 connection.close();
-                System.out.println("Close connect to DB.");
+                System.out.println("Connect closed to DB.");
             }
         }catch (SQLException e){
             System.err.println(e.getMessage());

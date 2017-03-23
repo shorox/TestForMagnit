@@ -7,41 +7,82 @@ import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.Properties;
 
+/**
+ * Класс <code>Controller</code> содержит необходимые методы для поэтапного выполнения задания
+ * @author Sharov V.
+ */
 public class Controller {
 
-    private Dao dao;
+    /**
+     * Объект данных для работы с базой данных на высоком уровне
+     */
+    private Dao dao;// = new Dao(properties);
 
-    public Controller(String url, String username, String password) {
-        dao = new Dao(url, username, password);
+    /**
+     * Проперти с необходимым набором параметров
+     */
+    private Properties properties;
+
+    public Controller() {
+        setProperties();
+        dao = new Dao(properties);
     }
 
-    public void addFields(int could){
-        for (int i = 1; i <= could; i++) {
-            Test test = new Test();
-            test.setField(i);
-            dao.save(test);
+    private void setProperties() {
+        try (FileInputStream inputStream = new FileInputStream("app.properties")) {
+            properties = new Properties();
+            properties.load(inputStream);
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
         }
     }
 
-    public void entityToXml(){
+    /**
+     * Метод добавляет в таблицу test заданное количество записей
+     */
+    public void addFields() {
+        int n = Integer.valueOf(properties.getProperty("app.n"));
+        for (int i = 1; i <= n; i++) {
+            Test test = new Test();
+            test.setField(i);
+            dao.save(test);
+            if (i % 500 == 0) {
+                dao.commit();
+            }
+            if (i % 10_000 == 0) {
+                System.out.println("   " + String.valueOf(i) + " records input in database");
+            }
+        }
+        dao.commit();
+        System.out.println("Total records input in database: " + String.valueOf(n));
+    }
+
+    /**
+     * Метод достает из базы данных список записей и помещает его в xml файл
+     */
+    public void entityToXml() {
         List<Test> list = dao.getAll();
-        if(list != null && list.size() > 0){
+        if (list != null && list.size() > 0) {
             try {
                 File file = new File("1.xml");
                 file.delete();
 
-                Document doc = DocumentBuilderFactory.newInstance()
-                        .newDocumentBuilder()
-                        .newDocument();
+                DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+                factory.setNamespaceAware(true);
+                Document doc = factory.newDocumentBuilder().newDocument();
 
                 Element rootElement = doc.createElement("entries");
                 doc.appendChild(rootElement);
@@ -56,30 +97,42 @@ public class Controller {
                     rootElement.appendChild(entry);
                 }
 
-                TransformerFactory.newInstance()
-                        .newTransformer()
-                        .transform(new DOMSource(doc), new StreamResult(file));
+                Transformer transformer = TransformerFactory.newInstance().newTransformer();
+                transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+                transformer.setOutputProperty(OutputKeys.STANDALONE, "yes");
+                transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+
+                transformer.transform(new DOMSource(doc), new StreamResult(file));
             } catch (ParserConfigurationException | TransformerException e) {
                 System.err.println(e.getMessage());
             }
         }
     }
 
-    public void transformXml(){
+    /**
+     * Метод транспортирует данные из одного xml файла в другой с разными формататми данных
+     */
+    public void transformXml() {
         try {
             File inFile = new File("1.xml");
             File outFile = new File("2.xml");
             outFile.delete();
 
-            TransformerFactory.newInstance()
-                    .newTransformer(new StreamSource(new File("transform.xsl")))
-                    .transform(new StreamSource(inFile), new StreamResult(outFile));
+            Transformer transformer = TransformerFactory.newInstance().newTransformer(new StreamSource(new File("transform.xsl")));
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.setOutputProperty(OutputKeys.STANDALONE, "yes");
+            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+
+            transformer.transform(new StreamSource(inFile), new StreamResult(outFile));
         } catch (TransformerException e) {
             System.err.println(e.getMessage());
         }
     }
 
-    public int summary(){
+    /**
+     * Метод считывает данные из xml файла, суммирует и выводит полученную сумму
+     */
+    public int summary() {
         int summary = 0;
         try {
             Document document = DocumentBuilderFactory.newInstance()
@@ -100,9 +153,24 @@ public class Controller {
         return summary;
     }
 
-    public void closeDao(){
-        if(dao != null){
+    /**
+     * Метод вызывает закрытие текущего коннекта к базе данных
+     */
+    public void closeDao() {
+        if (dao != null) {
             dao.close();
         }
+    }
+
+    /**
+     * Метод выводит проверку суммы заданного числа
+     */
+    public void checkup(){
+        int summary = 0;
+        int n = Integer.valueOf(properties.getProperty("app.n"));
+        for (int i = 1; i <= n; i++) {
+            summary += i;
+        }
+        System.out.println("Checksumm: "+ String.valueOf(summary));
     }
 }

@@ -1,5 +1,9 @@
 package ru.test.magnit;
 
+/**
+ * Entity класс
+ * @author Sharov V.
+ */
 public class Test {
 
     private int field;
