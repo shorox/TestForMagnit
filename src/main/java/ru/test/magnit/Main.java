@@ -4,6 +4,7 @@ package ru.test.magnit;
  *
  *
  * Main class
+ *
  */
 
 public class Main {
@@ -25,6 +26,7 @@ public class Main {
 
         System.out.println("Total summary: " + String.valueOf(summary));
         controller.checkup();
+
         timerOutput(totalTime);
     }
 

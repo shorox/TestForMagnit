@@ -39,7 +39,7 @@ public class Dao {
     }
 
     /**
-     * Метод <code>commit()</code> коммитит в базу данных
+     * Метод <code>commit()</code> коммитит изменения в базу данных
      */
     public void commit(){
         try {
@@ -92,6 +92,10 @@ public class Dao {
      */
     public void close(){
         try {
+            if(statement != null){
+                statement.close();
+            }
+
             if (connection != null) {
                 connection.close();
                 System.out.println("Connect closed to DB.");
