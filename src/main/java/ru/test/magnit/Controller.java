@@ -29,7 +29,7 @@ public class Controller {
     /**
      * Объект данных для работы с базой данных на высоком уровне
      */
-    private Dao dao;// = new Dao(properties);
+    private Dao dao;
 
     /**
      * Проперти с необходимым набором параметров
@@ -62,7 +62,7 @@ public class Controller {
             if (i % 500 == 0) {
                 dao.commit();
             }
-            if (i % 10_000 == 0) {
+            if (i % 50_000 == 0) {
                 System.out.println("   " + String.valueOf(i) + " records input in database");
             }
         }
@@ -75,6 +75,7 @@ public class Controller {
      */
     public void entityToXml() {
         List<Test> list = dao.getAll();
+
         if (list != null && list.size() > 0) {
             try {
                 File file = new File("1.xml");
@@ -132,8 +133,8 @@ public class Controller {
     /**
      * Метод считывает данные из xml файла, суммирует и выводит полученную сумму
      */
-    public int summary() {
-        int summary = 0;
+    public long summary() {
+        long summary = 0L;
         try {
             Document document = DocumentBuilderFactory.newInstance()
                     .newDocumentBuilder()
@@ -166,10 +167,11 @@ public class Controller {
      * Метод выводит проверку суммы заданного числа
      */
     public void checkup(){
-        int summary = 0;
-        int n = Integer.valueOf(properties.getProperty("app.n"));
+        long summary = 0L;
+        int n = Integer.parseInt(properties.getProperty("app.n"));
         for (int i = 1; i <= n; i++) {
             summary += i;
+//            if(i % 10000 == 0) System.out.println(i + " " + summary);
         }
         System.out.println("Checksumm: "+ String.valueOf(summary));
     }

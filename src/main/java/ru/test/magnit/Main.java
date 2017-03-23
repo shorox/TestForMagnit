@@ -19,7 +19,7 @@ public class Main {
         controller.closeDao();
 
         controller.transformXml();
-        int summary = controller.summary();
+        long summary = controller.summary();
 
         long totalTime = System.currentTimeMillis() - start;
 

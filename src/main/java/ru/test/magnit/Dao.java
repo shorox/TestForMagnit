@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Properties;
 
 /**
- * Класс данных для связи с базой данных и получения запросов
+ * Класс <code>Dao</code> для связи с базой данных и получения запросов
  * @author Sharov V.
  */
 public class Dao {
@@ -39,10 +39,11 @@ public class Dao {
     }
 
     /**
-     * Метод коммитит в базу данных
+     * Метод <code>commit()</code> коммитит в базу данных
      */
     public void commit(){
         try {
+            statement.executeBatch();
             connection.commit();
         } catch (SQLException e) {
             System.err.println(e.getMessage());
@@ -50,12 +51,12 @@ public class Dao {
     }
 
     /**
-     * Метод save() сохраняет объект в таблице Test базы данных
+     * Метод <code>save()</code> сохраняет объект в таблице Test базы данных
      * @param test сохраняемый объект
      */
     public Test save(Test test) {
         try {
-            statement.executeUpdate("INSERT INTO test(field) values('" + test.getField() + "')");
+            statement.addBatch("INSERT INTO test(field) values('" + test.getField() + "')");
             return test;
         } catch (SQLException e) {
             System.err.println(e.getMessage());
@@ -69,12 +70,12 @@ public class Dao {
     }
 
     /**
-     * Метод getAll() возвращает список объектов, содержащихся в таблице Test базы данных
+     * Метод <code>getAll()</code> возвращает список объектов, содержащихся в таблице Test базы данных
      */
     public List<Test> getAll() {
         List<Test> resultList = new ArrayList<>();
         try {
-            ResultSet result = statement.executeQuery("SELECT field FROM test");
+            ResultSet result = statement.executeQuery("SELECT field FROM test ORDER BY field");
             while (result.next()) {
                 Test test = new Test();
                 test.setField(result.getInt("field"));
@@ -87,7 +88,7 @@ public class Dao {
     }
 
     /**
-     * Метод close() закрывает текущий коннект
+     * Метод <code>close()</code> закрывает текущий коннект
      */
     public void close(){
         try {
