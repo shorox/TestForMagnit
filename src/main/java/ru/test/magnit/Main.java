@@ -25,7 +25,6 @@ public class Main {
         long totalTime = System.currentTimeMillis() - start;
 
         System.out.println("Total summary: " + String.valueOf(summary));
-        controller.checkup();
 
         timerOutput(totalTime);
     }

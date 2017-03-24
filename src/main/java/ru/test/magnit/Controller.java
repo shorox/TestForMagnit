@@ -162,17 +162,4 @@ public class Controller {
             dao.close();
         }
     }
-
-    /**
-     * Метод выводит проверку суммы заданного числа
-     */
-    public void checkup(){
-        long summary = 0L;
-        int n = Integer.parseInt(properties.getProperty("app.n"));
-        for (int i = 1; i <= n; i++) {
-            summary += i;
-//            if(i % 10000 == 0) System.out.println(i + " " + summary);
-        }
-        System.out.println("Checksumm: "+ String.valueOf(summary));
-    }
 }
